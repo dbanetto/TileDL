@@ -1,0 +1,22 @@
+language: cpp
+
+compiler:
+    - gcc
+    - clang
+
+before_install:
+    - sudo add-apt-repository ppa:kubuntu-ppa/backports -y
+    - sudo apt-get update -q
+    - sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libsdl2-gfx-dev
+    - sudo apt-get install -y libunittest++-dev
+
+install:
+    - cmake CMakeLists.txt
+    - make
+
+script:
+    - ./tiledlTest
+
+branches:
+    only:
+        - master

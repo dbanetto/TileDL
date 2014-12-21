@@ -1,5 +1,7 @@
 # TileDL
 
+[![Build Status](https://travis-ci.org/zyphrus/TileDL.svg?branch=master)](https://travis-ci.org/zyphrus/TileDL)
+
 A 2D Game engine focused for tile-based games, using C++ and SDL2.
 
 ## Build
