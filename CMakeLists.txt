@@ -12,7 +12,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR})
 # Find Libraries
 find_package(SDL2 REQUIRED)
 
-add_definitions("-std=c++11")
+list( APPEND CMAKE_CXX_FLAGS "-std=c++11")
 
 include_directories(${SDL2_INCLUDE_DIR})
 include_directories(${JSONCPP_INCLUDE_DIR})
