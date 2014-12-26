@@ -24,52 +24,72 @@ SUITE(RendererTests)
 
 	TEST(WithSDLBadInit) {
 		auto renderer = Renderer();
-		SDL_Init(SDL_INIT_VIDEO);
-		CHECK_EQUAL(false, renderer.init(nullptr, -1, 0));
-		SDL_Quit();
+
+		if (SDL_Init(SDL_INIT_VIDEO) == 0) {
+			CHECK_EQUAL(false, renderer.init(nullptr, -1, 0));
+			SDL_Quit();
+		} else {
+			SDL_Log("Could not init SDL with SDL_INIT_VIDEO : %s", SDL_GetError());
+		}
 	}
 
 	TEST(WithSDLBadInitSW) {
 		auto renderer = Renderer();
-		SDL_Init(SDL_INIT_VIDEO);
-		CHECK_EQUAL(false, renderer.initSW(nullptr));
-		SDL_Quit();
+
+		if (SDL_Init(SDL_INIT_VIDEO) == 0) {
+			CHECK_EQUAL(false, renderer.initSW(nullptr));
+			SDL_Quit();
+		} else {
+			SDL_Log("Could not init SDL with SDL_INIT_VIDEO : %s", SDL_GetError());
+		}
 	}
 
 	TEST(Init) {
 		auto renderer = Renderer();
-		SDL_Init(SDL_INIT_VIDEO);
-		auto win = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_HIDDEN);
-		CHECK_EQUAL(true, renderer.init(win, -1, 0));
-		renderer.destroy();
-		SDL_DestroyWindow(win);
-		SDL_Quit();
-		CHECK(renderer.getHandle() == nullptr);
+
+		if (SDL_Init(SDL_INIT_VIDEO) == 0) {
+			auto win = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_HIDDEN);
+			CHECK_EQUAL(true, renderer.init(win, -1, 0));
+			renderer.destroy();
+			SDL_DestroyWindow(win);
+			SDL_Quit();
+			CHECK(renderer.getHandle() == nullptr);
+		} else {
+			SDL_Log("Could not init SDL with SDL_INIT_VIDEO : %s", SDL_GetError());
+		}
 	}
 
 	TEST(EqualsOpertator) {
 		auto renderer = Renderer();
-		SDL_Init(SDL_INIT_VIDEO);
-		auto win = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_HIDDEN);
-		CHECK_EQUAL(true, renderer.init(win, -1, 0));
-		CHECK(renderer == renderer.getHandle());
-		renderer.destroy();
-		SDL_DestroyWindow(win);
-		SDL_Quit();
+
+		if (SDL_Init(SDL_INIT_VIDEO) == 0) {
+			auto win = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_HIDDEN);
+			CHECK_EQUAL(true, renderer.init(win, -1, 0));
+			CHECK(renderer == renderer.getHandle());
+			renderer.destroy();
+			SDL_DestroyWindow(win);
+			SDL_Quit();
+		} else {
+			SDL_Log("Could not init SDL with SDL_INIT_VIDEO : %s", SDL_GetError());
+		}
 	}
 
 	TEST(InitSW) {
 		auto renderer = Renderer();
-		SDL_Init(SDL_INIT_VIDEO);
-		auto surf = SDL_CreateRGBSurface(0, 1, 1, 32,
-		                                 0x000000ff,
-		                                 0x0000ff00,
-		                                 0x00ff0000,
-		                                 0xff000000);
 
-		CHECK_EQUAL(true, renderer.initSW(surf));
-		SDL_FreeSurface(surf);
-		SDL_Quit();
+		if (SDL_Init(SDL_INIT_VIDEO) == 0) {
+			auto surf = SDL_CreateRGBSurface(0, 1, 1, 32,
+			                                 0x000000ff,
+			                                 0x0000ff00,
+			                                 0x00ff0000,
+			                                 0xff000000);
+
+			CHECK_EQUAL(true, renderer.initSW(surf));
+			SDL_FreeSurface(surf);
+			SDL_Quit();
+		} else {
+			SDL_Log("Could not init SDL with SDL_INIT_VIDEO : %s", SDL_GetError());
+		}
 	}
 
 	TEST(ErrorNullHandle) {

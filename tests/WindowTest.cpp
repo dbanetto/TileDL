@@ -19,10 +19,14 @@ SUITE(WindowTests)
 
 	TEST(Init) {
 		auto win = Window();
-		SDL_Init(SDL_INIT_VIDEO);
-		CHECK(nullptr == win.getHandle());
-		CHECK(win.init("", 0, 0, 1, 1, 0));
-		CHECK(nullptr != win.getHandle() && NULL != win.getHandle());
-		SDL_Quit();
+
+		if (SDL_Init(SDL_INIT_VIDEO) == 0) {
+			CHECK(nullptr == win.getHandle());
+			CHECK(win.init("", 0, 0, 1, 1, 0));
+			CHECK(nullptr != win.getHandle() && NULL != win.getHandle());
+			SDL_Quit();
+		} else {
+			SDL_Log("Could not init SDL with SDL_INIT_VIDEO : %s", SDL_GetError());
+		}
 	}
 }

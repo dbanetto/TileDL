@@ -12,9 +12,12 @@ SUITE(GameTests)
 	}
 
 	TEST(Init) {
-		SDL_Init(SDL_INIT_VIDEO);
-		Game gm;
-		CHECK_EQUAL(0, gm.init("", 1, 1, SDL_WINDOW_HIDDEN, -1, 0));
-		SDL_Quit();
+		if (SDL_Init(SDL_INIT_VIDEO) == 0) {
+			Game gm;
+			CHECK_EQUAL(0, gm.init("", 1, 1, SDL_WINDOW_HIDDEN, -1, 0));
+			SDL_Quit();
+		} else {
+			SDL_Log("Could not init SDL with SDL_INIT_VIDEO : %s", SDL_GetError());
+		}
 	}
 }
