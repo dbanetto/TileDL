@@ -29,6 +29,7 @@ namespace tiledl
 		// Getters
 		int getWidth();
 		int getHeight();
+		int getRefCount();
 		SDL_TextureAccess getAccess();
 		Uint32 getFormat();
 		Uint8 getAlphaMod();
@@ -47,7 +48,7 @@ namespace tiledl
 		SDL_Renderer* owner;
 		SDL_Texture* texture;
 
-		Uint8 refcount;
+		int refcount;
 
 		int w, h, access;
 		Uint32 format;

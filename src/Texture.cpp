@@ -1,5 +1,6 @@
 #include "Texture.h"
 #include <stdexcept>
+#include <limits>
 
 using namespace tiledl;
 
@@ -40,10 +41,10 @@ void Texture::ref()
 {
 	null_check();
 
-	if (refcount == 0xff) {
+	if (refcount == std::numeric_limits<int>::max()) {
 		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-		            "Texture (%p) : reference count overflow. Has more than 255 references",
-		            this
+		            "Texture (%p) : reference count overflow. Has more than %i references",
+		            this, std::numeric_limits<int>::max()
 		           );
 		return;
 	}
@@ -56,10 +57,10 @@ void Texture::deref()
 	null_check();
 
 
-	if (refcount == 0) {
+	if (refcount <= 0) {
 		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-		            "Texture (%p) : dereferenced when no references known.",
-		            this
+		            "Texture (%p) : dereferenced when references is %i.",
+		            this, refcount
 		           );
 		return;
 	}
@@ -68,13 +69,17 @@ void Texture::deref()
 	// TODO: destroy texture if refcount is 0?
 }
 
+int Texture::getRefCount() {
+	return this->refcount;
+}
+
 void Texture::destroy()
 {
 	if (!this->isNull()) {
 		if (this->refcount != 0) { // NOTE: Should non-zero ref count stop destroy()?
 			SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-			            "Texture (%p) : Texture was destroyed while ref count was greater than zero.",
-			            this
+			            "Texture (%p) : Is being destroyed while ref count is greater than zero (%i).",
+			            this, this->refcount
 			           );
 		}
 

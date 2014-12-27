@@ -11,10 +11,12 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR})
 
 # Find Libraries
 find_package(SDL2 REQUIRED)
+find_package(SDL2Image REQUIRED)
 
 list( APPEND CMAKE_CXX_FLAGS "-std=c++11")
 
 include_directories(${SDL2_INCLUDE_DIR})
+include_directories(${SDL2_IMAGE_INCLUDE_DIR})
 include_directories(${JSONCPP_INCLUDE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
@@ -28,9 +30,11 @@ add_library(tiledl SHARED
 	src/Renderer.cpp
 	src/Color.cpp
 	src/Texture.cpp
+	src/Surface.cpp
 	)
 
 target_link_libraries(tiledl ${SDL2_LIBRARIES})
+target_link_libraries(tiledl ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(tiledl ${JSONCPP_LIBRARIES})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -54,6 +58,7 @@ if (UNITTEST++_FOUND)
 		tests/WindowTest.cpp
 		tests/ColorTest.cpp
 		tests/PointTest.cpp
+		tests/SurfaceTest.cpp
 		)
 	add_dependencies(tiledlTest tiledl)
 
