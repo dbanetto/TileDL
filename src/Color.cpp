@@ -91,3 +91,13 @@ Color::Color(int rgba, ColorByteOrder order)
 			break;
 	}
 }
+
+Uint32 Color::MapToRGB(SDL_PixelFormat* format)
+{
+	return SDL_MapRGB(format, this->r, this->g, this-> b);
+}
+
+Uint32 Color::MapToRGBA(SDL_PixelFormat* format)
+{
+	return SDL_MapRGBA(format, this->r, this->g, this-> b, this->a);
+}

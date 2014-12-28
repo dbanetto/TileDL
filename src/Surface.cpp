@@ -68,9 +68,9 @@ Surface::Surface(SDL_RWops* src, bool freesrc)
 
 	if (this->handle == NULL) {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-		            "Surface (%p): Failed to initialise from RWops (src:%p) : %s",
-		            this, src, SDL_GetError()
-		        );
+		             "Surface (%p): Failed to initialise from RWops (src:%p) : %s",
+		             this, src, SDL_GetError()
+		            );
 	}
 }
 
@@ -91,9 +91,9 @@ Surface::Surface(SDL_RWops* src, bool freesrc, char* type)
 
 	if (this->handle == NULL) {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-		            "Surface (%p): Failed to initialise from RWops (src:%p) type:%s : %s",
-		            this, src, type, SDL_GetError()
-		        );
+		             "Surface (%p): Failed to initialise from RWops (src:%p) type:%s : %s",
+		             this, src, type, SDL_GetError()
+		            );
 	}
 }
 
@@ -107,11 +107,11 @@ Surface::Surface(const char* file)
 	this->handle = IMG_Load(file);
 	this->refcount = 0;
 
-		if (this->handle == NULL) {
+	if (this->handle == NULL) {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-		            "Surface (%p): Failed to load image, path:%s : %s",
-		            this, file, SDL_GetError()
-		        );
+		             "Surface (%p): Failed to load image, path:%s : %s",
+		             this, file, SDL_GetError()
+		            );
 	}
 }
 
@@ -161,6 +161,32 @@ void Surface::lock()
 		           );
 		return;
 	}
+
+	this->locked = true;
+}
+
+void Surface::unlock()
+{
+	null_check();
+
+	SDL_UnlockSurface(this->handle);
+}
+
+/**
+ * @brief Checks if the surface must be locked for access
+ *
+ * @return true if the surface must be locked for access
+ */
+bool Surface::mustLock()
+{
+	null_check();
+
+	return (SDL_MUSTLOCK(this->handle) != 0);
+}
+
+bool Surface::isLocked()
+{
+	return this->locked;
 }
 
 void Surface::ref()
@@ -226,48 +252,39 @@ void Surface::destroy()
 			            this->handle, this->handle->refcount
 			           );
 		}
+
 		this->handle = nullptr;
 	}
 }
 
-void Surface::unlock()
-{
-	null_check();
-
-	SDL_UnlockSurface(this->handle);
-}
-
-/**
- * @brief Checks if the surface must be locked for access
- *
- * @return true if the surface must be locked for access
- */
-bool Surface::mustLock()
-{
-	null_check();
-
-	return (SDL_MUSTLOCK(this->handle) != 0);
-}
-
 /**
  * @brief Resizes the surface by copying to a different size surface.
- * This is an expensive function
+ * This is an expensive function. Surface must be unlocked
  *
- * @param newSize The new size of the Surface, only w and h are used
+ * @param newWidth  the new width of the surface
+ * @param newHeight the new height of the surface
  * @note This re-created the surface with a different SDL_Surface handle,
- * and if the refcount is non-zero a warning is issued
+ * and if the refcount is non-zero a warning is issued.
  *
  */
-void Surface::resize(const Rectangle& newSize)
+void Surface::resize(int newWidth, int newHeight)
 {
 	null_check();
+	if (this->locked) {
+		// During a surface is locked you cannot blit a surface
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+		             "Surface (%p): Failed during resize, can not operate on a locked surface : %s",
+		             this
+		            );
+		return;
+	}
+	auto newHandle = CreateSurface(newWidth, newHeight);
 
-	auto newHandle = CreateSurface(newSize.w, newSize.h);
 	if (this->handle == NULL) {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-		            "Surface (%p): Failed during resize, could not create new surface {w:%i,h:%i} : %s",
-		            this, newSize.w, newSize.h, SDL_GetError()
-		        );
+		             "Surface (%p): Failed during resize, could not create new surface {w:%i,h:%i} : %s",
+		             this, newWidth, newHeight, SDL_GetError()
+		            );
 		return;
 	}
 
@@ -291,6 +308,20 @@ void Surface::resize(const Rectangle& newSize)
 	auto oldHandle = this->handle;
 	this->handle = newHandle;
 	SDL_FreeSurface(oldHandle);
+}
+
+/**
+ * @brief Resizes the surface by copying to a different size surface.
+ * This is an expensive function. Surface must be unlocked
+ *
+ * @param newSize The new size of the Surface, only w and h are used
+ * @note This re-created the surface with a different SDL_Surface handle,
+ * and if the refcount is non-zero a warning is issued.
+ *
+ */
+void Surface::resize(const Rectangle& newSize)
+{
+	this->resize(newSize.w, newSize.h);
 }
 
 bool Surface::SaveBMP(const char* file)
@@ -456,6 +487,13 @@ void* Surface::getUserData()
 	return this->handle->userdata;
 }
 
+void* Surface::getPixels()
+{
+	null_check();
+
+	return this->handle->pixels;
+}
+
 /**
  * @brief Get the Surface refcount
  *
@@ -474,12 +512,14 @@ SDL_BlendMode Surface::getBlendMode()
 	null_check();
 
 	SDL_BlendMode out;
+
 	if (SDL_GetSurfaceBlendMode(this->handle, &(out)) != 0) {
 		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
 		            "Surface (%p): Failed to get blend mode : %s",
 		            this, SDL_GetError()
 		           );
 	}
+
 	return out;
 }
 
@@ -488,12 +528,14 @@ Uint8 Surface::getAlphaMod()
 	null_check();
 
 	Uint8 out = 255;
+
 	if (SDL_GetSurfaceAlphaMod(this->handle, &(out)) != 0) {
 		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
 		            "Surface (%p): Failed to get alpha mod : %s",
 		            this, SDL_GetError()
 		           );
 	}
+
 	return out;
 }
 
@@ -501,12 +543,14 @@ Color Surface::getColorMod()
 {
 	null_check();
 
-	Color out(255,255,255);
+	Color out(255, 255, 255);
+
 	if (SDL_GetSurfaceColorMod(this->handle, &(out.r), &(out.g), &(out.b)) != 0) {
 		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
 		            "Surface (%p): Failed to get color mod : %s",
 		            this, SDL_GetError()
 		           );
 	}
+
 	return out;
 }

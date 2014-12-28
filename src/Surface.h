@@ -44,9 +44,11 @@ namespace tiledl
 			bool isNull();
 			void lock();
 			void unlock();
+			bool isLocked();
 			bool mustLock();
 
 			void resize(const Rectangle& newSize);
+			void resize(int newWidth, int newHeight);
 
 			bool SaveBMP(const char* file);
 			bool SaveBMP(SDL_RWops* dst, bool freedst);
@@ -65,6 +67,7 @@ namespace tiledl
 			int getWidth();
 			int getHeight();
 			int getPitch();
+			void* getPixels();
 			void* getUserData();
 			Rectangle getClipRect();
 			int getRefCount();
@@ -75,6 +78,7 @@ namespace tiledl
 		private:
 			inline void null_check();
 			int refcount;
+			bool locked;
 			SDL_Surface* handle;
 	};
 	SDL_Surface* CreateSurface(int width, int height);
